@@ -72,6 +72,57 @@ def page_not_found(e):
 #   ...
 
 
+# -------------------------------- HOME PAGE ----------------------------------
+
+#POST a new room when one is created
+#GET the list of rooms to display on the homepage
+@app.route('/api/', methods = ["GET", "POST"])
+def home():
+    if request.method == 'GET':
+        # get list of rooms and return to user
+        query = "SELECT * FROM rooms"
+        room_rows = query_db(query)
+        room_list = []
+        for row in room_rows:
+            row_dict = {}
+            if isinstance(row["id"], bytes):
+                room_id = row["id"].decode('utf-8')
+            else:
+                room_id = row["id"]
+
+            if isinstance(row["name"], bytes):
+                room_name = row["name"].decode('utf-8')
+            else:
+                room_name = row["name"]
+        
+            row_dict["room_id"] = room_id
+            row_dict["room_name"] = room_name
+
+            room_list.append(row_dict)
+        return jsonify(room_list)
+    
+    if request.method == 'POST':
+        room_name = "New Room" + ''.join(random.choices(string.digits, k=6))
+        db = get_db()
+        cursor = db.execute("INSERT INTO rooms (name) VALUES (?)", [room_name])
+        db.commit()
+        cursor.close()
+
+        query = "SELECT id FROM rooms where name = ?"
+        room = query_db(query, [room_name])
+        room_list = []
+        for row in room:
+            row_dict = {}
+            if isinstance(row["id"], bytes):
+                room_id = row["id"].decode('utf-8')
+            else:
+                room_id = row["id"]
+            row_dict["room_id"] = room_id
+            room_list.append(row_dict)
+        return jsonify(room_list)
+
+
+
 # -------------------------------- LOGIN ----------------------------------
 
 # GET to get the user
@@ -144,42 +195,83 @@ def create_account():
 # -------------------------------- ROOM ----------------------------------
     
 # GET to get all the messages in a room
-@app.route('/api/room/<int:room_id>', methods = ["GET"])
+@app.route('/api/room/<int:room_id>', methods = ["GET", "POST"])
 def get_messages_in_room(room_id):
-    query = "SELECT * FROM messages LEFT JOIN users ON \
-        messages.user_id = users.id WHERE messages.room_id = ?"
-    messages_rows = query_db(query, [room_id])
-
-    list_of_messages = []
-    for row in messages_rows:
-        row_dict = {}
-
-        if isinstance(row["id"], bytes):
-            id = row["id"].decode('utf-8')
-        else:
-            id = row["id"]
-
-        if isinstance(row["user_id"], bytes):
-            user_id = row["user_id"].decode('utf-8')
-        else:
-            user_id = row["user_id"]
-
-        if isinstance(row["body"], bytes):
-            body = row["body"].decode('utf-8')
-        else:
-            body = row["body"]
-
-        if isinstance(row["name"], bytes):
-            name = row["name"].decode('utf-8')
-        else:
-            name = row["name"]
+    if request.method == "GET":
+        query_rooms = "SELECT * FROM rooms WHERE id= ?"
+        room = query_db(query_rooms, [room_id])
+        if room is None:
+            room_name = None
         
-        row_dict["message_id"] = id
-        row_dict["user_id"] = user_id
-        row_dict["body"] = body
-        row_dict["author"] = name
+        else:
+            for row in room:
+                room_name = row["name"]
+        
+        query_messages = "SELECT * FROM messages LEFT JOIN users ON \
+        messages.user_id = users.id WHERE messages.room_id = ?"
+        messages_rows = query_db(query_messages, [room_id])
+        if messages_rows is None:
+            return jsonify([{"room_id": room_id, "room_name": room_name}])
 
-        list_of_messages.append(row_dict)
+        list_of_messages = []
+        for row in messages_rows:
+            row_dict = {}
+
+            if isinstance(row["id"], bytes):
+                id = row["id"].decode('utf-8')
+            else:
+                id = row["id"]
+
+            if isinstance(row["user_id"], bytes):
+                user_id = row["user_id"].decode('utf-8')
+            else:
+                user_id = row["user_id"]
+
+            if isinstance(row["body"], bytes):
+                body = row["body"].decode('utf-8')
+            else:
+                body = row["body"]
+
+            if isinstance(row["name"], bytes):
+                name = row["name"].decode('utf-8')
+            else:
+                name = row["name"]
+
+            row_dict["room_id"] = room_id
+            row_dict["message_id"] = id
+            row_dict["user_id"] = user_id
+            row_dict["body"] = body
+            row_dict["author"] = name
+            row_dict["room_name"] = room_name
+
+            list_of_messages.append(row_dict)
+
+        return jsonify(list_of_messages)
+    
+    # if request.method == "POST":
+    #     return {}
 
 
-    return jsonify(list_of_messages)
+# -------------------------------- PROFILE ----------------------------------
+
+# POST to change the user's name
+@app.route('/api/profile', methods = ["POST"])
+def update_profile():
+    #get the infromation sent in the script.js request 
+    api_key = request.headers.get('user-api')
+    user_name = request.headers.get('username')
+    new_pw = request.headers.get('new-pw')
+    print(new_pw)
+
+    if new_pw == "":
+        db = get_db()
+        cursor = db.execute("UPDATE users SET name = ? WHERE api_key = ?", [user_name, api_key])
+        db.commit()
+        cursor.close()
+        return jsonify({})
+    else:
+        db = get_db()
+        cursor = db.execute("UPDATE users SET password = ? WHERE api_key = ? and name = ?", [new_pw, api_key, user_name])
+        db.commit()
+        cursor.close()
+        return jsonify({})
