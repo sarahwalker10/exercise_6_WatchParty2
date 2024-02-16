@@ -8,18 +8,24 @@
   <link rel="stylesheet" type="text/css" href="/static/style.css"></link>
 </head>
 <body>
-<div class="splash container"> <!-- TODO: Show me only on "/" -->
+<div class="splash container"> <!-- Show me only on "/" -->
   <div class="splashHeader">
     <div class="loginHeader">
-      <div class="loggedOut"> <!-- TODO: Show me only to logged-out users -->
-        <a>Login</a>
+      
+      
+      <div class="loggedOut hide"> <!-- Show me only to logged-out users -->
+        <a id = "login-button">Login</a>
       </div>
-      <div class="loggedIn"> <!-- TODO: Show me only to logged-in users -->
+
+
+      <div class="loggedIn hide"> <!-- Show me only to logged-in users -->
         <a class="welcomeBack">
-          <span class="username">Welcome back, {{ Username }}!</span>
+          <span class="username" id = "home-page-username"></span>
           <span class="material-symbols-outlined md-18">person</span></a>
         </a>
       </div>
+
+
     </div>
   </div>
 
@@ -30,16 +36,17 @@
     </div>
     <h1>Watch Party</h1>
     <h2>2</h2>
-    <button class="create">Create a Room</button> <!-- TODO: Show me only to logged-in users -->
-    <button class="signup">Signup</button> <!-- TODO: Show me only to logged-out users -->
+    <button class="create hide">Create a Room</button> <!-- Show me only to logged-in users -->
+    <button class="signup hide">Signup</button> <!-- Show me only to logged-out users -->
   </div>
 
-  <h2>Rooms</h2>
-  <div class="rooms">
-    <div class="roomList">
+  
+  <div class="rooms hide">
+    <h2 class="room-display">Rooms</h2>
+    <div class="roomList"> <!-- TODO: build a room list -->
       <a>{{room.id}}: <strong>{{room.name}}</strong></a>
     </div>
-    <div class="noRooms">No rooms yet! You get to be first!</div> <!-- TODO: Show me only if roomList is empty -->
+    <div class="noRooms hide">No rooms yet! You get to be first!</div> <!-- TODO: Show me only if roomList is empty -->
   </div>
 </div> <!-- end .splash -->
 
@@ -50,7 +57,7 @@
     <div class="loginHeader">
       <div class="loggedIn">
         <a class="welcomeBack">
-          <span class="username">{{ Username }}</span>
+          <span class="username" id="username-banner"></span>
           <span class="material-symbols-outlined md-18">person</span></a>
         </a>
       </div>
@@ -61,16 +68,16 @@
       <h2>Welcome to Watch Party!</h2>
       <div class="alignedForm">
         <label for="username">Username: </label>
-        <input name="username" value="{{ username }}">
-        <button>update</button>
+        <input name="username" id="name-set" value="">
+        <button id="updateUser">update</button>
         <label for="password">Password: </label>
-        <input type="password" name="password" value="{{ password }}">
-        <button>update</button>
+        <input type="password" name="password" id="pw-set" value="">
+        <button id="updatePassword">update</button>
         <label for="repeatPassword">Repeat: </label>
-        <input type="password" name="repeatPassword" value="{{ password }}">
-        <error>Passwords don't match</error>
-        <button class="exit goToSplash">Cool, let's go!</button>
-        <button class="exit logout">Log out</button>
+        <input type="password" name="repeatPassword" id="repeat-pw" value="">
+        <error class="error">Passwords don't match</error>
+        <button class="exit goToSplash" id="cool">Cool, let's go!</button>
+        <button class="exit logout" id="log-out">Log out</button>
       </div>
     </div>
   </div> 
@@ -86,16 +93,16 @@
       <h3>Enter your username and password to log in:</h3>
       <div class="alignedForm login">
         <label for="username">Username</label>
-        <input name="username"></input>
-        <button>Login</button>
+        <input id="usernameInput" name="username"></input>
+        <button class="go">Login</button>
         <label for="password">Password</label>
-        <input type="password" name="password">
+        <input id="passwordInput" type="password" name="password"></input>
       </div>
       <div class="failed"> <!-- TODO: Hide me by default. Show only on failed login attempts -->
-        <div class="message">
+        <div class="message hide">
           Oops, that username and password don't match any of our users!
         </div>
-        <button>Create a new Account</button>
+        <button class="new">Create a new Account</button>
       </div>
     </div>
   </div>
@@ -139,7 +146,10 @@
           <textarea name="comment"></textarea>
           <button type="submit" value="Post">Post</button>
         </div>
-        <div class="messages"> <!-- TODO: Replace with the content returned by the API -->
+
+
+
+        <div class="messages" id="messages-block"> <!-- Replace with the content returned by the API -->
           <message>
             <author>Mr Chatterworth</author>
             <content>Good evening! And how is everyone feeling?</content>
@@ -165,6 +175,11 @@
             <content>Indeed, M. Cat. Indeed. 🧐</content>
           </message>
         </div>
+
+
+
+
+
       </div>
       <div class="noMessages">
         <h2>Oops, we can't find that room!</h2>

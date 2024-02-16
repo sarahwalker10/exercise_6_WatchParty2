@@ -4,6 +4,11 @@
 
 **DUE: Friday, February 16 by 5:00pm**
 
+**References:**
+- https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage  
+- Fei Wang  
+- Aïcha Camara  
+
 ### Instructions
 
 For this exercise, we will build a _single-page_ group chat web application with
