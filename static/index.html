@@ -113,16 +113,16 @@
     <h2><a>Watch Party</a></h2>
     <h4>2</h4>
     <div class="roomDetail">
-      <div class="displayRoomName"> <!-- TODO: Show me by default. Hide when user clicks the edit icon below -->
+      <div class="displayRoomName" id="display-id"> <!-- TODO: Show me by default. Hide when user clicks the edit icon below -->
         <h3>
           Chatting in <strong id="put-room-name"></strong>
-          <a><span class="material-symbols-outlined md-18">edit</span></a>
+          <a><span class="material-symbols-outlined md-18" onclick="clickEdit(event)">edit</span></a>
         </h3>
       </div>
-      <div class="editRoomName hide"> <!-- Hide me by default. Show when user clicks the edit icon above -->
+      <div class="editRoomName hide" id="edit-id"> <!-- Hide me by default. Show when user clicks the edit icon above -->
         <h3>
-          Chatting in <input>
-          <button>Update</button>
+          Chatting in <input id="input-value">
+          <button onclick="clickSave(event)">Update</button>
         </h3>
       </div>
       Invite users to this chat at:
@@ -131,7 +131,7 @@
     <div class="loginHeader">
       <div class="loggedIn">
         <a class="welcomeBack">
-          <span class="username"></span>
+          <span class="username" id="room-username"></span>
           <span class="material-symbols-outlined md-18">person</span></a>
         </a>
       </div>
@@ -143,8 +143,8 @@
       <div class="chat">
         <div class="comment_box">
           <label for="comment">What do you have to say?</label>
-          <textarea id = "post-box" name="comment"></textarea>
-          <button id = "post-button" type="submit" value="Post">Post</button>
+          <textarea id="post-box" name="comment"></textarea>
+          <button id = "post-button" onclick="postMessage(event)" type="submit" value="Post">Post</button>
         </div>
 
 
