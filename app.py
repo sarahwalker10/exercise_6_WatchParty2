@@ -270,19 +270,22 @@ def room_functions(room_id):
 def update_profile():
     #get the infromation sent in the script.js request 
     api_key = request.headers.get('user-api')
+    print(api_key)
     user_name = request.headers.get('username')
-    new_pw = request.headers.get('new-pw')
-    print(new_pw)
+    print(user_name)
+    update_type = request.headers.get('update-type')
 
     #update username in the db
-    if new_pw == "":
+    if update_type == "username":
         db = get_db()
         cursor = db.execute("UPDATE users SET name = ? WHERE api_key = ?", [user_name, api_key])
         db.commit()
         cursor.close()
         return jsonify({})
     #update password in the db
-    else:
+    elif update_type == "password":
+        new_pw = request.headers.get('new-pw')
+        print(new_pw)
         db = get_db()
         cursor = db.execute("UPDATE users SET password = ? WHERE api_key = ? and name = ?", [new_pw, api_key, user_name])
         db.commit()

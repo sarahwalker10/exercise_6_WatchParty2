@@ -181,9 +181,9 @@ function loadEventListeners() {
       method: "POST",
       headers: {
         "Content-Type": "application/json", 
-        "user-api": sessionStorage.getItem("user_api"),
+        "user-api": sessionStorage.getItem("user_api_key"),
         "username": new_username,
-        "new-pw": "",
+        "update-type": "username",
        },
        }).then(response => { if (response.status == 200) {
         // update the sessionStorage with new credentials
@@ -207,9 +207,10 @@ function loadEventListeners() {
         method: "POST",
         headers: {
           "Content-Type": "application/json", 
-          "user-api": sessionStorage.getItem("user_api"),
+          "user-api": sessionStorage.getItem("user_api_key"),
           "username": sessionStorage.getItem("user_name"),
-          "new-pw": new_pw
+          "new-pw": new_pw,
+          "update-type": "password",
          },
          }).then(response => { if (response.status == 200) {
           console.log("your password has been updated")
@@ -259,6 +260,76 @@ createRoomButton.addEventListener("click", function () {
       router(path);
     })
   })
+
+
+  // add event listener to log-in button (goes inside loginPageActions)
+  document.querySelector(".go").addEventListener("click", (event) => {
+    // get the username and password they inputted
+    console.log("log in pushed")
+    pw = document.getElementById("passwordInput").value;
+    user = document.getElementById("usernameInput").value;
+    console.log(pw, user, "login inputs")
+    //send request to app.py to verify if valid user
+    fetch(`/api/login`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "password": pw,
+        "username": user,
+      },
+      }).then(response => response.json())
+      .then(info => {
+        console.log(info)
+        info.forEach(item => {
+          // response will have their user_id and api_key
+          const user_id = item.user_id
+          const user_api_key = item.user_api_key
+          //if their log-in is invalid, api-key will be null
+          //and display error message
+          if (user_api_key == null) {
+            document.querySelector(".message").classList.remove("hide")
+          }
+          // otherwise, save their apikey in sessionStorage and redirect to "/"
+          //page (they will be logged in)
+          else {
+            sessionStorage.setItem("user_api_key", user_api_key);
+            sessionStorage.setItem("user_id", user_id);
+            sessionStorage.setItem("user_name", user);
+            history.back()
+            // history.pushState({}, "", "/")
+            // router("/")
+          }
+        })})
+    })
+  
+
+   //add event listner to user profile banner inside the rooms
+   document.querySelector("#room-username").addEventListener("click", function () {
+    history.pushState({}, "", "/profile")
+    router("/profile")
+    return
+  })
+
+  //add event listener to when person clicks to create new account
+  document.querySelector(".new").addEventListener("click", function(event){
+    event.preventDefault()
+    console.log("clicked create account button")
+    fetch(`/api/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      }).then(response => response.json())
+      .then(info => {
+        sessionStorage.setItem("user_api_key", info[0].user_api);
+        sessionStorage.setItem("user_name", info[0].user_name);
+        sessionStorage.setItem("user_id", info[0].user_id);
+
+        history.pushState({}, "", "/")
+        router("/")
+      })   
+    }
+    )
 
 }
 
@@ -400,64 +471,10 @@ function getHomePage() {
 
 // function to handle log-in page
 function loginPageActions() {
-  //add event listener to when person clicks to create new account
-  document.querySelector(".new").addEventListener("click", function(event){
-    event.preventDefault()
-    console.log("clicked create account button")
-    fetch(`/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      }).then(response => response.json())
-      .then(info => {
-        sessionStorage.setItem("user_api_key", info[0].user_api);
-        sessionStorage.setItem("user_name", info[0].user_name);
-        sessionStorage.setItem("user_id", info[0].user_id);
-
-        history.pushState({}, "", "/")
-        router("/")
-      })   
-    }
-    )
+  // make sure the username and password inputs are empty
+  document.getElementById("passwordInput").value = "";
+  document.getElementById("usernameInput").value = "";
  
-
-  // add event listener to log-in button
-  document.querySelector(".go").addEventListener("click", (event) => {
-    // get the username and password they inputted
-    pw = document.getElementById("passwordInput").value;
-    user = document.getElementById("usernameInput").value;
-    //send request to app.py to verify if valid user
-    fetch(`/api/login`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "password": pw,
-        "username": user,
-      },
-      }).then(response => response.json())
-      .then(info => {
-        info.forEach(item => {
-          // response will have their user_id and api_key
-          const user_id = item.user_id
-          const user_api_key = item.user_api_key
-          //if their log-in is invalid, api-key will be null
-          //and display error message
-          if (user_api_key == null) {
-            document.querySelector(".message").classList.remove("hide")
-          }
-          // otherwise, save their apikey in sessionStorage and redirect to "/"
-          //page (they will be logged in)
-          else {
-            sessionStorage.setItem("user_api_key", user_api_key);
-            sessionStorage.setItem("user_id", user_id);
-            sessionStorage.setItem("user_name", user);
-            history.back()
-            // history.pushState({}, "", "/")
-            // router("/")
-          }
-        })})
-    })
 }
 
 
@@ -527,13 +544,6 @@ function handleReturn(info, room_id) {
     user_banner.innerHTML = sessionStorage.getItem("user_name")
     document.querySelector("#invite-ppl").innerHTML = "/rooms/" + room_id
     document.querySelector("#put-room-name").innerHTML = room_name
-
-    //add event listner to user profile banner
-    user_banner.addEventListener("click", function () {
-      history.pushState({}, "", "/profile")
-      router("/profile")
-      return
-    })
     
     
     // start message polling every .5 seconds = 500 milliseconds
@@ -586,6 +596,7 @@ function postMessage(event) {
   function clickEdit(event) {
     event.preventDefault()
     document.getElementById("display-id").classList.add("hide");
+    document.getElementById("input-value").value = ""; 
     document.getElementById("edit-id").classList.remove("hide");
     
   }
