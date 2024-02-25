@@ -136,6 +136,7 @@ function router(path) {
 window.addEventListener("DOMContentLoaded", ()=>{
   history.pushState({}, "", window.location.pathname)
   console.log("page load pushed" + window.location.pathname)
+  loadEventListeners();
   router(window.location.pathname);
 })
 
@@ -161,14 +162,8 @@ window.addEventListener("popstate", () => {
 //   return intervalId
 // }
 
+function loadEventListeners() {
 
-
-
-//  _____________FUNCTIONS FOR THE "/profile" PAGE ______________________________________________
-
-function profilePage() {
-  // display user name in profile banner
-  document.getElementById("username-banner").innerHTML = sessionStorage.getItem("user_name")
   //add event listner to the log-out button
   document.querySelector("#log-out").addEventListener("click", function () {
     sessionStorage.clear();
@@ -226,7 +221,8 @@ function profilePage() {
     }
     
   })
-  
+
+
   // add event listner when they click "cool, let's go"
   // send them back to whatever page they were just at
   const cool = document.querySelector("#cool")
@@ -238,8 +234,48 @@ function profilePage() {
     document.querySelector("#repeat-pw").value = "";
     history.back()
 })
+
+// and add an event listener to user profile banner on home page
+document.querySelector("#home-page-username").addEventListener("click", function () {
+  history.pushState({}, "", "/profile")
+  console.log("history pushed /profile")
+  router("/profile")
+})
+
+// add an event listner to the "create room" button
+const createRoomButton = document.querySelector(".create")
+createRoomButton.addEventListener("click", function () {
+  fetch(`/api/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "post-type": "create_room",
+    },
+    }).then(response => response.json())
+    .then(info => {
+      room_number = info[0].room_id
+      path = "/room/" +room_number
+      history.pushState({}, "", path) 
+      router(path);
+    })
+  })
+
 }
 
+
+
+
+//  _____________FUNCTIONS FOR THE "/profile" PAGE ______________________________________________
+
+function profilePage() {
+  // display user name in profile banner
+  document.getElementById("username-banner").innerHTML = sessionStorage.getItem("user_name")
+  // have empty input values for the boxes
+  document.querySelector("#pw-set").value = "";
+  document.querySelector("#name-set").value = "";
+  document.querySelector("#repeat-pw").value = "";
+  
+}
 
 
 //  _____________FUNCTIONS FOR THE "/" PAGE ______________________________________________
@@ -310,14 +346,8 @@ function getInOrOut(logged_in) {
 
 function getHomePage() {
   // 1. display the user's username in the profile banner 
-  // and add an event listener to user profile banner
   console.log(sessionStorage.getItem("user_name"))
   document.querySelector("#home-page-username").innerHTML = sessionStorage.getItem("user_name")
-  document.querySelector("#home-page-username").addEventListener("click", function () {
-    history.pushState({}, "", "/profile")
-    console.log("history pushed /profile")
-    router("/profile")
-  })
   
   
   // 2. display the rooms:
@@ -362,23 +392,6 @@ function getHomePage() {
       }
     }) 
 
-    // 3. add an event listner to the "create room" button
-    const createRoomButton = document.querySelector(".create")
-    createRoomButton.addEventListener("click", function () {
-      fetch(`/api/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "post-type": "create_room",
-        },
-        }).then(response => response.json())
-        .then(info => {
-          room_number = info[0].room_id
-          path = "/room/" +room_number
-          history.pushState({}, "", path) 
-          router(path);
-        })
-      })
 }
 
 
